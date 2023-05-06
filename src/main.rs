@@ -1,5 +1,5 @@
 use crate::days::{
-  day_2::{self, parse_intcode_program, restore_intcode_program},
+  day_2::{self, parse_intcode_program, restore_intcode_program, run_intcode},
   day_3, day_4,
 };
 use std::path::PathBuf;
@@ -20,7 +20,7 @@ fn main() {
   restore_intcode_program(&mut program);
   println!(
     "Value at position 0 after running intcode: {}",
-    days::day_2::run_intcode(&mut program).unwrap()[0]
+    run_intcode(&mut program).unwrap()[0]
   );
 
   let (noun, verb) = day_2::find_noun_verb().unwrap();
@@ -45,4 +45,9 @@ fn main() {
     day_4::UPPER_LIMIT,
     day_4::possible_passwords_count()
   );
+
+  let mut test_program = parse_intcode_program(&PathBuf::from("src/input/day_5.txt")).unwrap();
+  println!("Running Thermal Environment Supervision Terminal (TEST) program..");
+  run_intcode(&mut test_program).unwrap();
+  println!("TEST program finished running");
 }

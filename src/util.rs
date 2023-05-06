@@ -24,3 +24,7 @@ pub fn digits(num: usize) -> Vec<usize> {
   digits.reverse();
   digits
 }
+
+pub fn digit_count(num: isize) -> u32 {
+  num.checked_ilog10().unwrap_or(0) + 1
+}
