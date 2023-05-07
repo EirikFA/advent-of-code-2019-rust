@@ -5,6 +5,7 @@ use crate::days::{
 use std::path::PathBuf;
 
 mod days;
+mod intcode;
 mod util;
 
 pub type Error = Box<dyn std::error::Error>;
@@ -20,7 +21,7 @@ fn main() {
   restore_intcode_program(&mut program);
   println!(
     "Value at position 0 after running intcode: {}",
-    run_intcode(&mut program).unwrap()[0]
+    run_intcode(&mut program, None).unwrap()[0]
   );
 
   let (noun, verb) = day_2::find_noun_verb().unwrap();
@@ -46,8 +47,17 @@ fn main() {
     day_4::possible_passwords_count()
   );
 
-  let mut test_program = parse_intcode_program(&PathBuf::from("src/input/day_5.txt")).unwrap();
-  println!("Running Thermal Environment Supervision Terminal (TEST) program..");
-  run_intcode(&mut test_program).unwrap();
+  let mut air_conditioner_program =
+    parse_intcode_program(&PathBuf::from("src/input/day_5.txt")).unwrap();
+  println!("Running Thermal Environment Supervision Terminal (TEST) program for air conditioner..");
+  run_intcode(&mut air_conditioner_program, Some(vec![1])).unwrap();
+  println!("TEST program finished running");
+
+  let mut thermal_radiator_program =
+    parse_intcode_program(&PathBuf::from("src/input/day_5.txt")).unwrap();
+  println!(
+    "Running Thermal Environment Supervision Terminal (TEST) program for thermal radiator.."
+  );
+  run_intcode(&mut thermal_radiator_program, Some(vec![5])).unwrap();
   println!("TEST program finished running");
 }
