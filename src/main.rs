@@ -1,6 +1,6 @@
 use crate::days::{
   day_2::{self, parse_intcode_program, restore_intcode_program, run_intcode},
-  day_3, day_4, day_5, day_6,
+  day_3, day_4, day_5, day_6, day_7,
 };
 use std::path::PathBuf;
 
@@ -21,7 +21,7 @@ fn main() {
   restore_intcode_program(&mut program);
   println!(
     "Value at position 0 after running intcode: {}",
-    run_intcode(&mut program, None).unwrap()[0]
+    run_intcode(&mut program, None).unwrap().0[0]
   );
 
   let (noun, verb) = day_2::find_noun_verb().unwrap();
@@ -49,4 +49,5 @@ fn main() {
 
   day_5::run_day_5();
   day_6::run_day_6();
+  day_7::run_day_7();
 }

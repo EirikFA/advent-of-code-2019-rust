@@ -11,6 +11,34 @@ pub struct Instruction {
   parameters: Vec<Parameter>,
 }
 
+pub struct InstructionResult {
+  pub output: Option<isize>,
+  pub pointer: Option<usize>,
+}
+
+impl InstructionResult {
+  fn empty() -> InstructionResult {
+    InstructionResult {
+      output: None,
+      pointer: None,
+    }
+  }
+
+  fn from_output(output: isize) -> InstructionResult {
+    InstructionResult {
+      output: Some(output),
+      pointer: None,
+    }
+  }
+
+  fn from_jump(pointer: usize) -> InstructionResult {
+    InstructionResult {
+      output: None,
+      pointer: Some(pointer),
+    }
+  }
+}
+
 impl Instruction {
   pub fn from_ints(ints: &[isize]) -> Instruction {
     // First value must be positive
@@ -40,23 +68,22 @@ impl Instruction {
     program[result_param.address_or_value as usize] = result;
   }
 
-  /// Optionally returns a new instruction pointer
-  pub fn run(&self, program: &mut Program, input: Option<isize>) -> Option<usize> {
+  pub fn run(&self, program: &mut Program, input: Option<isize>) -> InstructionResult {
     match self.opcode {
       Opcode::Add => {
         let operands: Vec<isize> = self.map_parameter_values(program.to_vec());
         self.set_result(program, operands[0] + operands[1]);
-        None
+        InstructionResult::empty()
       }
       Opcode::Multiply => {
         let operands: Vec<isize> = self.map_parameter_values(program.to_vec());
         self.set_result(program, operands[0] * operands[1]);
-        None
+        InstructionResult::empty()
       }
       Opcode::SaveInput => {
         if let Some(input) = input {
           self.set_result(program, input);
-          return None;
+          return InstructionResult::empty();
         }
 
         let mut input_buffer = String::new();
@@ -69,46 +96,43 @@ impl Instruction {
           .expect("Invalid input, must be a number");
 
         self.set_result(program, input);
-        None
+        InstructionResult::empty()
       }
       Opcode::Output => {
         let parameter = &self.parameters[0];
-        println!("{}", parameter.get_value(program));
-        None
+        InstructionResult::from_output(parameter.get_value(program))
       }
       Opcode::JumpIfTrue => {
         let params: Vec<isize> = self.map_parameter_values(program.to_vec());
         if params[0] != 0 {
-          return Some(
-            params[1]
-              .try_into()
-              .expect("Invalid jump address (must be positive)"),
-          );
+          let pointer: usize = params[1]
+            .try_into()
+            .expect("Invalid jump address (must be positive)");
+          return InstructionResult::from_jump(pointer);
         }
-        None
+        InstructionResult::empty()
       }
       Opcode::JumpIfFalse => {
         let params: Vec<isize> = self.map_parameter_values(program.to_vec());
         if params[0] == 0 {
-          return Some(
-            params[1]
-              .try_into()
-              .expect("Invalid jump address (must be positive)"),
-          );
+          let pointer: usize = params[1]
+            .try_into()
+            .expect("Invalid jump address (must be positive)");
+          return InstructionResult::from_jump(pointer);
         }
-        None
+        InstructionResult::empty()
       }
       Opcode::LessThan => {
         let params: Vec<isize> = self.map_parameter_values(program.to_vec());
         self.set_result(program, (params[0] < params[1]) as isize);
-        None
+        InstructionResult::empty()
       }
       Opcode::Equals => {
         let params: Vec<isize> = self.map_parameter_values(program.to_vec());
         self.set_result(program, (params[0] == params[1]) as isize);
-        None
+        InstructionResult::empty()
       }
-      Opcode::Halt => None,
+      Opcode::Halt => InstructionResult::empty(),
     }
   }
 }

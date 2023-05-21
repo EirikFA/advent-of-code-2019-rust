@@ -1,6 +1,6 @@
 use crate::util::{digit_count, digits};
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Opcode {
   Add,
   Multiply,

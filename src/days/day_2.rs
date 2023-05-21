@@ -1,5 +1,9 @@
 use crate::{
-  intcode::{instruction::Instruction, opcode::Opcode, Program},
+  intcode::{
+    instruction::{Instruction, InstructionResult},
+    opcode::Opcode,
+    Program,
+  },
   Result,
 };
 use std::{fs, path::PathBuf};
@@ -20,9 +24,14 @@ pub fn restore_intcode_program(program: &mut Program) {
   program[2] = 2;
 }
 
-pub fn run_intcode(program: &mut Program, inputs: Option<Vec<isize>>) -> Result<Program> {
+/// Returns the possibly modified program and its outputs
+pub fn run_intcode(
+  program: &mut Program,
+  inputs: Option<Vec<isize>>,
+) -> Result<(Program, Vec<isize>)> {
   let mut pointer = 0;
   let mut input_pointer = 0;
+  let mut outputs: Vec<isize> = vec![];
   loop {
     let opcode = Opcode::from_first_value(program[pointer] as usize);
     if opcode == Opcode::Halt {
@@ -32,16 +41,22 @@ pub fn run_intcode(program: &mut Program, inputs: Option<Vec<isize>>) -> Result<
     let instruction =
       Instruction::from_ints(&program[pointer..=pointer + opcode.parameter_count()]);
     let unwrapped_inputs = inputs.clone().unwrap_or(vec![]);
-    let new_pointer: Option<usize> =
+    let result: InstructionResult =
       instruction.run(program, unwrapped_inputs.get(input_pointer).copied());
 
-    pointer = new_pointer.unwrap_or(pointer + opcode.parameter_count() + 1);
+    if let Some(output) = result.output {
+      outputs.push(output);
+    }
+
+    pointer = result
+      .pointer
+      .unwrap_or(pointer + opcode.parameter_count() + 1);
     if instruction.opcode == Opcode::SaveInput {
       input_pointer += 1;
     }
   }
 
-  Ok(program.to_vec())
+  Ok((program.to_vec(), outputs))
 }
 
 pub const TARGET_OUTPUT: usize = 19690720;
@@ -52,8 +67,8 @@ pub fn find_noun_verb() -> Result<(usize, usize)> {
       let mut program = original_program.clone();
       program[1] = noun;
       program[2] = verb;
-      let output = run_intcode(&mut program, None)?;
-      if output[0] == TARGET_OUTPUT as isize {
+      let (new_program, _) = run_intcode(&mut program, None)?;
+      if new_program[0] == TARGET_OUTPUT as isize {
         return Ok((noun as usize, verb as usize));
       }
     }
