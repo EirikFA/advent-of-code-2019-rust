@@ -7,6 +7,8 @@ use super::{
   opcode::Opcode,
 };
 
+const MEMORY_SIZE: usize = 2000;
+
 #[derive(Clone, Debug)]
 pub struct Program {
   pub memory: Vec<isize>,
@@ -17,11 +19,20 @@ pub struct Program {
 impl From<&PathBuf> for Program {
   fn from(path: &PathBuf) -> Program {
     let initial = fs::read_to_string(path).unwrap();
-    let memory: Vec<isize> = initial
-      .trim()
-      .split(',')
-      .map(|s| s.parse::<isize>().unwrap())
-      .collect();
+    // Allocate minimum memory size
+    let mut memory: Vec<isize> = Vec::with_capacity(MEMORY_SIZE);
+
+    memory.extend(
+      initial
+        .trim()
+        .split(',')
+        .map(|s| s.parse::<isize>().unwrap()),
+    );
+
+    // Expand memory to minimum size if needed
+    if memory.len() < MEMORY_SIZE {
+      memory.resize(MEMORY_SIZE, 0);
+    }
 
     Program {
       memory,
@@ -60,6 +71,10 @@ impl Program {
     result
   }
 
+  pub fn adjust_relative_base(&mut self, value: isize) {
+    self.relative_base += value;
+  }
+
   pub fn run(&mut self, inputs: Option<Vec<isize>>) -> Result<Vec<isize>> {
     let mut input_pointer = 0;
     let mut outputs: Vec<isize> = vec![];
@@ -71,6 +86,7 @@ impl Program {
 
       let instruction = self.get_instruction(opcode.parameter_count());
       let unwrapped_inputs = inputs.clone().unwrap_or(vec![]);
+
       let result: InstructionResult =
         self.run_instruction(&instruction, unwrapped_inputs.get(input_pointer).copied());
 

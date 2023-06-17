@@ -10,6 +10,7 @@ pub enum Opcode {
   JumpIfFalse,
   LessThan,
   Equals,
+  AdjustRelativeBase,
   Halt,
 }
 
@@ -24,6 +25,7 @@ impl From<usize> for Opcode {
       6 => Opcode::JumpIfFalse,
       7 => Opcode::LessThan,
       8 => Opcode::Equals,
+      9 => Opcode::AdjustRelativeBase,
       99 => Opcode::Halt,
       _ => panic!("Invalid opcode: {}", value),
     }
@@ -41,6 +43,7 @@ impl Opcode {
       Opcode::JumpIfFalse => 2,
       Opcode::LessThan => 3,
       Opcode::Equals => 3,
+      Opcode::AdjustRelativeBase => 1,
       Opcode::Halt => 0,
     }
   }

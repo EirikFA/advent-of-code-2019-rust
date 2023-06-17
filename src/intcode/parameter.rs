@@ -2,7 +2,7 @@ use crate::util::{digit_count, digits};
 
 use super::program::Program;
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum ParameterMode {
   Position,
   Immediate,
@@ -37,15 +37,25 @@ impl ParameterMode {
   }
 }
 
+#[derive(Debug)]
 pub struct Parameter {
   pub mode: ParameterMode,
   pub address_or_value: isize,
 }
 
 impl Parameter {
+  pub fn address(&self, program: &Program) -> usize {
+    match self.mode {
+      // Position and relative parameters are always addresses (and thus positive)
+      ParameterMode::Position => self.address_or_value as usize,
+      ParameterMode::Immediate => panic!("Cannot get address of immediate parameter"),
+      ParameterMode::Relative => (program.relative_base + self.address_or_value) as usize,
+    }
+  }
+
   pub fn get_value(&self, program: &Program) -> isize {
     match self.mode {
-      // Position parameters are always addresses (and thus positive)
+      // Position and relative parameters are always addresses (and thus positive)
       ParameterMode::Position => program.get(self.address_or_value as usize),
       ParameterMode::Immediate => self.address_or_value,
       ParameterMode::Relative => {

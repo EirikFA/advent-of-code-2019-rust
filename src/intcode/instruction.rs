@@ -8,7 +8,7 @@ use super::{
 
 pub struct Instruction {
   pub opcode: Opcode,
-  parameters: Vec<Parameter>,
+  pub parameters: Vec<Parameter>,
 }
 
 pub struct InstructionResult {
@@ -67,7 +67,7 @@ impl Instruction {
 
   fn set_result(&self, program: &mut Program, result: isize) {
     let result_param = self.parameters.last().unwrap();
-    program.set(result_param.address_or_value as usize, result);
+    program.set(result_param.address(program), result);
   }
 
   pub fn run(&self, program: &mut Program, input: Option<isize>) -> InstructionResult {
@@ -132,6 +132,11 @@ impl Instruction {
       Opcode::Equals => {
         let params: Vec<isize> = self.map_parameter_values(program);
         self.set_result(program, (params[0] == params[1]) as isize);
+        InstructionResult::empty()
+      }
+      Opcode::AdjustRelativeBase => {
+        let params: Vec<isize> = self.map_parameter_values(program);
+        program.adjust_relative_base(params[0]);
         InstructionResult::empty()
       }
       Opcode::Halt => InstructionResult::empty(),

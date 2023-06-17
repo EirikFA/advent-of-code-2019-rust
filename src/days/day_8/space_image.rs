@@ -92,7 +92,7 @@ impl SpaceImage {
   pub fn render(&self) {
     let decoded = self.decode();
     for (i, pixel) in decoded.data.iter().enumerate() {
-      if i % self.width == 0 {
+      if i != 0 && i % self.width == 0 {
         println!();
       }
       pixel.render();
