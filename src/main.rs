@@ -1,6 +1,6 @@
 use crate::days::{
   day_2::{self, parse_intcode_program, restore_intcode_program, run_intcode},
-  day_3, day_4, day_5, day_6, day_7,
+  day_3, day_4, day_5, day_6, day_7, day_8,
 };
 use std::path::PathBuf;
 
@@ -50,4 +50,5 @@ fn main() {
   day_5::run_day_5();
   day_6::run_day_6();
   day_7::run_day_7();
+  day_8::run_day_8();
 }
