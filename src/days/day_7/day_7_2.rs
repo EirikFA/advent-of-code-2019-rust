@@ -1,11 +1,9 @@
-use crate::days::day_2::parse_intcode_program;
-use crate::days::day_7::amplifier::Amplifier;
-use crate::intcode::Program;
+use crate::{days::day_7::amplifier::Amplifier, intcode::program::Program};
 use itertools::Itertools;
 use std::path::PathBuf;
 
 pub fn run_day_7_2() {
-  let amplifier_program = parse_intcode_program(&PathBuf::from("src/input/day_7.txt")).unwrap();
+  let amplifier_program = Program::from(&PathBuf::from("src/input/day_7.txt"));
   let signal = max_thruster_signal(amplifier_program);
   println!(
     "Highest possible thruster signal with feedback loop: {}",

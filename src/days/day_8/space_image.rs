@@ -9,16 +9,18 @@ pub enum Color {
   Transparent,
 }
 
-impl Color {
-  pub fn from_digit(digit: u8) -> Result<Color> {
+impl From<u8> for Color {
+  fn from(digit: u8) -> Color {
     match digit {
-      0 => Ok(Color::Black),
-      1 => Ok(Color::White),
-      2 => Ok(Color::Transparent),
-      _ => Err("Invalid color digit".into()),
+      0 => Color::Black,
+      1 => Color::White,
+      2 => Color::Transparent,
+      _ => panic!("Invalid color digit"),
     }
   }
+}
 
+impl Color {
   pub fn render(&self) {
     match self {
       Color::Black => print!(" "),
@@ -50,7 +52,7 @@ impl SpaceImage {
         data: chunk
           .to_vec()
           .iter()
-          .map(|pixel| Color::from_digit(*pixel).unwrap())
+          .map(|pixel| Color::from(*pixel))
           .collect(),
       })
       .collect();

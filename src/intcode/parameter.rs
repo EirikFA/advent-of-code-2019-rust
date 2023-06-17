@@ -1,11 +1,12 @@
 use crate::util::{digit_count, digits};
 
-use super::Program;
+use super::program::Program;
 
 #[derive(PartialEq)]
 pub enum ParameterMode {
   Position,
   Immediate,
+  Relative,
 }
 
 impl From<usize> for ParameterMode {
@@ -13,6 +14,7 @@ impl From<usize> for ParameterMode {
     match value {
       0 => ParameterMode::Position,
       1 => ParameterMode::Immediate,
+      2 => ParameterMode::Relative,
       _ => panic!("Invalid parameter mode: {}", value),
     }
   }
@@ -44,8 +46,12 @@ impl Parameter {
   pub fn get_value(&self, program: &Program) -> isize {
     match self.mode {
       // Position parameters are always addresses (and thus positive)
-      ParameterMode::Position => program[self.address_or_value as usize],
+      ParameterMode::Position => program.get(self.address_or_value as usize),
       ParameterMode::Immediate => self.address_or_value,
+      ParameterMode::Relative => {
+        let address = program.relative_base + self.address_or_value;
+        program.get(address as usize)
+      }
     }
   }
 }

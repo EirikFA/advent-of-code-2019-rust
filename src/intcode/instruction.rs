@@ -3,7 +3,7 @@ use std::io::{self, Write};
 use super::{
   opcode::Opcode,
   parameter::{Parameter, ParameterMode},
-  Program,
+  program::Program,
 };
 
 pub struct Instruction {
@@ -39,8 +39,8 @@ impl InstructionResult {
   }
 }
 
-impl Instruction {
-  pub fn from_ints(ints: &[isize]) -> Instruction {
+impl From<&[isize]> for Instruction {
+  fn from(ints: &[isize]) -> Instruction {
     // First value must be positive
     let opcode = Opcode::from_first_value(ints[0] as usize);
 
@@ -54,8 +54,10 @@ impl Instruction {
 
     Instruction { opcode, parameters }
   }
+}
 
-  fn map_parameter_values(&self, program: Program) -> Vec<isize> {
+impl Instruction {
+  fn map_parameter_values(&self, program: &Program) -> Vec<isize> {
     self
       .parameters
       .iter()
@@ -65,18 +67,18 @@ impl Instruction {
 
   fn set_result(&self, program: &mut Program, result: isize) {
     let result_param = self.parameters.last().unwrap();
-    program[result_param.address_or_value as usize] = result;
+    program.set(result_param.address_or_value as usize, result);
   }
 
   pub fn run(&self, program: &mut Program, input: Option<isize>) -> InstructionResult {
     match self.opcode {
       Opcode::Add => {
-        let operands: Vec<isize> = self.map_parameter_values(program.to_vec());
+        let operands: Vec<isize> = self.map_parameter_values(program);
         self.set_result(program, operands[0] + operands[1]);
         InstructionResult::empty()
       }
       Opcode::Multiply => {
-        let operands: Vec<isize> = self.map_parameter_values(program.to_vec());
+        let operands: Vec<isize> = self.map_parameter_values(program);
         self.set_result(program, operands[0] * operands[1]);
         InstructionResult::empty()
       }
@@ -103,7 +105,7 @@ impl Instruction {
         InstructionResult::from_output(parameter.get_value(program))
       }
       Opcode::JumpIfTrue => {
-        let params: Vec<isize> = self.map_parameter_values(program.to_vec());
+        let params: Vec<isize> = self.map_parameter_values(program);
         if params[0] != 0 {
           let pointer: usize = params[1]
             .try_into()
@@ -113,7 +115,7 @@ impl Instruction {
         InstructionResult::empty()
       }
       Opcode::JumpIfFalse => {
-        let params: Vec<isize> = self.map_parameter_values(program.to_vec());
+        let params: Vec<isize> = self.map_parameter_values(program);
         if params[0] == 0 {
           let pointer: usize = params[1]
             .try_into()
@@ -123,12 +125,12 @@ impl Instruction {
         InstructionResult::empty()
       }
       Opcode::LessThan => {
-        let params: Vec<isize> = self.map_parameter_values(program.to_vec());
+        let params: Vec<isize> = self.map_parameter_values(program);
         self.set_result(program, (params[0] < params[1]) as isize);
         InstructionResult::empty()
       }
       Opcode::Equals => {
-        let params: Vec<isize> = self.map_parameter_values(program.to_vec());
+        let params: Vec<isize> = self.map_parameter_values(program);
         self.set_result(program, (params[0] == params[1]) as isize);
         InstructionResult::empty()
       }

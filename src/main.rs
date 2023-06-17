@@ -1,6 +1,6 @@
-use crate::days::{
-  day_2::{self, parse_intcode_program, restore_intcode_program, run_intcode},
-  day_3, day_4, day_5, day_6, day_7, day_8,
+use crate::{
+  days::{day_2, day_3, day_4, day_5, day_6, day_7, day_8},
+  intcode::program::Program,
 };
 use std::path::PathBuf;
 
@@ -17,11 +17,12 @@ fn main() {
     days::day_1::total_fuel_requirement().unwrap()
   );
 
-  let mut program = parse_intcode_program(&PathBuf::from("src/input/day_2.txt")).unwrap();
-  restore_intcode_program(&mut program);
+  let mut program = Program::from(&PathBuf::from("src/input/day_2.txt"));
+  day_2::restore_intcode_program(&mut program);
+  program.run(None).unwrap();
   println!(
     "Value at position 0 after running intcode: {}",
-    run_intcode(&mut program, None).unwrap().0[0]
+    program.memory[0]
   );
 
   let (noun, verb) = day_2::find_noun_verb().unwrap();
